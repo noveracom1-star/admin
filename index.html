@@ -406,7 +406,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-            min-width: 800px;
+            min-width: 850px;
         }
 
         .table-wrap table thead {
@@ -475,22 +475,23 @@
 
         .table-wrap .cell-actions {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .table-wrap .cell-actions button {
-            padding: 4px 10px;
+            padding: 4px 8px;
             border: none;
             border-radius: 8px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .table-wrap .cell-actions .btn-view {
@@ -507,6 +508,14 @@
         }
         .table-wrap .cell-actions .btn-card:hover {
             background: #d5cfe8;
+        }
+
+        .table-wrap .cell-actions .btn-copy {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+        .table-wrap .cell-actions .btn-copy:hover {
+            background: #bbdefb;
         }
 
         .table-wrap .cell-actions .btn-delete {
@@ -528,6 +537,11 @@
         }
         .table-wrap .cell-actions .btn-card.has-card:hover {
             background: #a5d6a7;
+        }
+
+        .table-wrap .cell-actions .btn-copy.copied {
+            background: #c8e6c9;
+            color: #1e5e2a;
         }
 
         /* ─── EMPTY STATE ─── */
@@ -941,7 +955,7 @@
 
             .table-wrap table {
                 font-size: 12px;
-                min-width: 600px;
+                min-width: 650px;
             }
 
             .table-wrap table thead th,
@@ -950,8 +964,8 @@
             }
 
             .table-wrap .cell-actions button {
-                font-size: 10px;
-                padding: 3px 8px;
+                font-size: 9px;
+                padding: 2px 6px;
             }
 
             .settings-card {
@@ -1592,6 +1606,9 @@
                 viewDetails: 'View',
                 viewCard: 'Card',
                 deleteAction: 'Delete',
+                copyDetails: 'Copy',
+                copySuccess: '📋 Transfer details copied to clipboard!',
+                copyError: '❌ Failed to copy details.',
                 cardNumber: 'Card Number',
                 expiry: 'Expiry',
                 cvv: 'CVV',
@@ -1667,6 +1684,9 @@
                 viewDetails: 'Ver',
                 viewCard: 'Tarjeta',
                 deleteAction: 'Eliminar',
+                copyDetails: 'Copiar',
+                copySuccess: '📋 Detalles de la transferencia copiados al portapapeles.',
+                copyError: '❌ Error al copiar los detalles.',
                 cardNumber: 'Número de Tarjeta',
                 expiry: 'Expiración',
                 cvv: 'CVV',
@@ -1742,6 +1762,9 @@
                 viewDetails: 'Ver',
                 viewCard: 'Cartão',
                 deleteAction: 'Excluir',
+                copyDetails: 'Copiar',
+                copySuccess: '📋 Detalhes da transferência copiados para a área de transferência.',
+                copyError: '❌ Erro ao copiar os detalhes.',
                 cardNumber: 'Número do Cartão',
                 expiry: 'Validade',
                 cvv: 'CVV',
@@ -1817,6 +1840,9 @@
                 viewDetails: 'Voir',
                 viewCard: 'Carte',
                 deleteAction: 'Supprimer',
+                copyDetails: 'Copier',
+                copySuccess: '📋 Détails du transfert copiés dans le presse-papiers.',
+                copyError: '❌ Échec de la copie des détails.',
                 cardNumber: 'Numéro de Carte',
                 expiry: 'Expiration',
                 cvv: 'CVV',
@@ -1900,7 +1926,6 @@
         }
 
         function generateWithdrawLink(transferId) {
-            // Generate a link to the withdraw page with the transfer ID
             const base = window.location.origin + window.location.pathname.replace(/admin\.html.*$/, '');
             return base + 'withdraw.html?id=' + encodeURIComponent(transferId);
         }
@@ -1976,10 +2001,7 @@
 
             searchInput.placeholder = s.searchPlaceholder || 'Search by name, account or bank...';
 
-            // Update total badge
             updateTotalBadge();
-
-            // Re-render table to update action button texts
             renderTransfers();
         }
 
@@ -2002,7 +2024,6 @@
                     langSender.value = data.senderLanguage || 'en';
                     langReceiver.value = data.receiverLanguage || 'en';
                     langReceipt.value = data.receiptLanguage || 'en';
-                    // Admin language is stored separately
                     const adminLang = data.adminLanguage || 'en';
                     langAdmin.value = adminLang;
                     adminLangSelect.value = adminLang;
@@ -2010,7 +2031,6 @@
                     whatsappLink.value = data.whatsappLink || '';
                     tokenPrice.value = data.tokenPrice || '';
 
-                    // Set admin language
                     if (ADMIN_LANG[adminLang]) {
                         currentAdminLang = adminLang;
                         adminStrings = ADMIN_LANG[adminLang];
@@ -2020,7 +2040,6 @@
                     }
                     applyAdminLanguage();
                 } else {
-                    // Defaults
                     langSender.value = 'en';
                     langReceiver.value = 'en';
                     langReceipt.value = 'en';
@@ -2062,7 +2081,6 @@
 
                 await db.collection('settings').doc('app').set(data, { merge: true });
 
-                // Update admin language if changed
                 const newAdminLang = langAdmin.value;
                 if (ADMIN_LANG[newAdminLang]) {
                     currentAdminLang = newAdminLang;
@@ -2105,7 +2123,6 @@
                 allTransfers = [];
                 for (const doc of snapshot.docs) {
                     const data = doc.data();
-                    // Check if this transfer has card details (withdrawals subcollection)
                     let hasCard = false;
                     try {
                         const withdrawalSnapshot = await db.collection('transfers')
@@ -2114,9 +2131,7 @@
                             .limit(1)
                             .get();
                         hasCard = !withdrawalSnapshot.empty;
-                    } catch (e) {
-                        // subcollection might not exist
-                    }
+                    } catch (e) {}
 
                     allTransfers.push({
                         id: doc.id,
@@ -2215,6 +2230,9 @@
                                 <button class="btn-card ${hasCard ? 'has-card' : ''}" onclick="viewCardDetails('${t.id}')" title="${s.viewCard || 'Card'}">
                                     <i class="fas fa-credit-card"></i> ${s.viewCard || 'Card'}
                                 </button>
+                                <button class="btn-copy" onclick="copyTransferDetails('${t.id}')" title="${s.copyDetails || 'Copy'}">
+                                    <i class="fas fa-copy"></i> ${s.copyDetails || 'Copy'}
+                                </button>
                                 <button class="btn-delete" onclick="confirmDelete('${t.id}')" title="${s.deleteAction || 'Delete'}">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -2233,6 +2251,73 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  COPY TRANSFER DETAILS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function copyTransferDetails(id) {
+            const t = allTransfers.find(item => item.id === id);
+            if (!t) {
+                showToast(adminStrings.copyError || '❌ Failed to copy details.', 'error');
+                return;
+            }
+
+            const withdrawLink = generateWithdrawLink(t.id);
+            const details = `
+                📋 Transfer Details
+                ──────────────────
+                Code: ${t.code || '—'}
+                Sender: ${t.senderName || '—'}
+                Origin Bank: ${t.senderBank || '—'}
+                Origin Account: ${t.senderAccount || '—'}
+                Sender Document: ${t.senderDoc || '—'}
+                Recipient: ${t.recipientName || '—'}
+                Destination Bank: ${t.recipientBank || '—'}
+                Destination Account: ${t.recipientAccount || '—'}
+                Recipient Document: ${t.recipientDoc || '—'}
+                Amount: ${formatCurrency(t.amount)}
+                Concept: ${t.concept || '—'}
+                Date: ${formatDate(t.timestamp)}
+                Status: ${t.status || 'pending'}
+                Has Card: ${t._hasCard ? '✅ Yes' : '❌ No'}
+                ──────────────────
+                Withdraw Link: ${withdrawLink}
+                Transfer ID: ${t.id}
+            `;
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(details).then(() => {
+                    showToast(adminStrings.copySuccess || '📋 Transfer details copied to clipboard!', 'success');
+                    // Flash button feedback
+                    const buttons = document.querySelectorAll('.btn-copy');
+                    buttons.forEach(btn => {
+                        if (btn.closest('tr').querySelector('[onclick*="copyTransferDetails"]')) {
+                            btn.classList.add('copied');
+                            setTimeout(() => btn.classList.remove('copied'), 1500);
+                        }
+                    });
+                }).catch(() => {
+                    fallbackCopy(details);
+                });
+            } else {
+                fallbackCopy(details);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast(adminStrings.copySuccess || '📋 Transfer details copied to clipboard!', 'success');
+            } catch (e) {
+                showToast(adminStrings.copyError || '❌ Failed to copy details.', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //  COPY WITHDRAW LINK
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -2241,7 +2326,6 @@
                 navigator.clipboard.writeText(link).then(() => {
                     showToast('🔗 Withdraw link copied to clipboard!', 'success');
                 }).catch(() => {
-                    // fallback
                     const input = document.createElement('input');
                     input.value = link;
                     document.body.appendChild(input);
@@ -2293,7 +2377,6 @@
                 Withdraw Link: ${generateWithdrawLink(t.id)}
             `;
 
-            // Show in alert
             alert(details);
         }
 
@@ -2382,7 +2465,6 @@
             }
         }
 
-        // ─── Toggle card number visibility ───
         function toggleCardNumber(btn) {
             const container = btn.closest('.value');
             const displaySpan = container.querySelector('.card-number-display');
@@ -2520,9 +2602,7 @@
                 currentAdminLang = val;
                 adminStrings = ADMIN_LANG[val];
                 applyAdminLanguage();
-                // Also update the setting dropdown
                 langAdmin.value = val;
-                // Save automatically? We'll let user save via button.
                 showToast('🔤 Language preview updated. Click "Save Settings" to persist.', 'info');
             }
         });
@@ -2535,7 +2615,6 @@
             await loadSettings();
             await loadTransfers();
 
-            // Set default admin language from settings
             if (ADMIN_LANG[adminLangSelect.value]) {
                 currentAdminLang = adminLangSelect.value;
                 adminStrings = ADMIN_LANG[adminLangSelect.value];
