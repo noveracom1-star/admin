@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Admin · Puerto Rico Transfers</title>
+
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js">
+    </script>
+
+    <style>
+        /* ─── RESET & BASE ─── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px 12px;
+            margin: 0;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .app-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* ─── HEADER ─── */
+        .app-header {
+            background: linear-gradient(135deg, #002868 0%, #003399 50%, #1a4a8a 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0, 40, 104, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::after {
+            content: '★';
+            position: absolute;
+            right: 60px;
+            top: -10px;
+            font-size: 70px;
+            opacity: 0.06;
+            color: #fff;
+            transform: rotate(15deg);
+        }
+
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            z-index: 1;
+        }
+
+        .app-header .brand .logo-icon {
+            background: rgba(255, 255, 255, 0.12);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            flex-shrink: 0;
+            color: #ffd700;
+        }
+
+        .app-header .brand h1 {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.2px;
+            line-height: 1.2;
+        }
+
+        .app-header .brand small {
+            display: block;
+            font-weight: 400;
+            font-size: 11px;
+            opacity: 0.7;
+            letter-spacing: 0.3px;
+        }
+
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(4px);
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .app-header .badge i {
+            font-size: 14px;
+        }
+
+        .app-header .lang-selector {
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 4px 12px 4px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .app-header .lang-selector select {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 0;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .app-header .lang-selector select option {
+            background: #1a2a4a;
+            color: #fff;
+        }
+
+        .app-header .lang-selector i {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        /* ─── MAIN CARD ─── */
+        .main-card {
+            background: #ffffff;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.02);
+            padding: 0;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* ─── TABS ─── */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f2f6;
+            padding: 0 20px;
+            background: #fafbfd;
+            gap: 4px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .tabs .tab-btn {
+            padding: 14px 22px;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: #8b9aae;
+            cursor: pointer;
+            transition: all 0.25s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tabs .tab-btn:hover {
+            color: #1e2a3a;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .tabs .tab-btn.active {
+            color: #002868;
+            border-bottom-color: #002868;
+        }
+
+        .tabs .tab-btn i {
+            font-size: 15px;
+        }
+
+        /* ─── TAB CONTENT ─── */
+        .tab-content {
+            display: none;
+            padding: 20px 24px 24px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── STATS ROW ─── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #f8f9fc;
+            border-radius: 14px;
+            padding: 14px 18px;
+            border: 1px solid #edf1f8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-card .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-card .stat-icon.blue {
+            background: #e8edf9;
+            color: #002868;
+        }
+        .stat-card .stat-icon.green {
+            background: #e3f3ea;
+            color: #0a7e3c;
+        }
+        .stat-card .stat-icon.orange {
+            background: #fef1e0;
+            color: #f5a623;
+        }
+        .stat-card .stat-icon.red {
+            background: #fde8ea;
+            color: #d91023;
+        }
+        .stat-card .stat-icon.purple {
+            background: #ede7f6;
+            color: #6a1b9a;
+        }
+
+        .stat-card .stat-info .stat-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f1a2b;
+            line-height: 1.2;
+        }
+
+        .stat-card .stat-info .stat-label {
+            font-size: 11px;
+            color: #8b9aae;
+            font-weight: 500;
+        }
+
+        /* ─── FILTER / SEARCH ─── */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+
+        .toolbar .search-wrap {
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+        }
+
+        .toolbar .search-wrap input {
+            width: 100%;
+            padding: 9px 14px 9px 38px;
+            border: 1.5px solid #e2e7ef;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfd;
+            transition: all 0.2s;
+            color: #141f2e;
+        }
+
+        .toolbar .search-wrap input:focus {
+            outline: none;
+            border-color: #002868;
+            box-shadow: 0 0 0 3px rgba(0, 40, 104, 0.08);
+            background: #ffffff;
+        }
+
+        .toolbar .search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b0bccd;
+            font-size: 14px;
+        }
+
+        .toolbar .filter-badge {
+            font-size: 12px;
+            color: #8b9aae;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8f9fc;
+            padding: 5px 14px;
+            border-radius: 30px;
+            border: 1px solid #edf1f8;
+        }
+
+        .toolbar .filter-badge span {
+            font-weight: 700;
+            color: #1e2a3a;
+        }
+
+        .btn-refresh {
+            padding: 9px 16px;
+            border: 1.5px solid #e2e7ef;
+            border-radius: 12px;
+            background: #fafbfd;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1e2a3a;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover {
+            background: #f0f2f7;
+            border-color: #c8d0dc;
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ─── TRANSFERS TABLE ─── */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid #edf1f8;
+            background: #fafbfd;
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 800px;
+        }
+
+        .table-wrap table thead {
+            background: #f0f2f6;
+        }
+
+        .table-wrap table thead th {
+            padding: 11px 14px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #7d8da0;
+            border-bottom: 2px solid #e2e7ef;
+            white-space: nowrap;
+        }
+
+        .table-wrap table tbody td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #edf1f8;
+            color: #1e2a3a;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        .table-wrap table tbody tr:hover {
+            background: #f5f7fb;
+        }
+
+        .table-wrap table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-wrap .badge-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-status.pending {
+            background: #fef1e0;
+            color: #f5a623;
+        }
+        .badge-status.completed {
+            background: #e3f3ea;
+            color: #0a7e3c;
+        }
+        .badge-status.failed {
+            background: #fde8ea;
+            color: #d91023;
+        }
+        .badge-status.withdrawing {
+            background: #ede7f6;
+            color: #6a1b9a;
+        }
+
+        .table-wrap .amount-cell {
+            font-weight: 700;
+            color: #0f1a2b;
+        }
+
+        .table-wrap .cell-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap .cell-actions button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .table-wrap .cell-actions .btn-view {
+            background: #e8edf9;
+            color: #002868;
+        }
+        .table-wrap .cell-actions .btn-view:hover {
+            background: #d5ddf0;
+        }
+
+        .table-wrap .cell-actions .btn-card {
+            background: #ede7f6;
+            color: #6a1b9a;
+        }
+        .table-wrap .cell-actions .btn-card:hover {
+            background: #d5cfe8;
+        }
+
+        .table-wrap .cell-actions .btn-delete {
+            background: #fde8ea;
+            color: #d91023;
+        }
+        .table-wrap .cell-actions .btn-delete:hover {
+            background: #fcd5d8;
+        }
+
+        .table-wrap .cell-actions .btn-delete:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .table-wrap .cell-actions .btn-card.has-card {
+            background: #c8e6c9;
+            color: #1e5e2a;
+        }
+        .table-wrap .cell-actions .btn-card.has-card:hover {
+            background: #a5d6a7;
+        }
+
+        /* ─── EMPTY STATE ─── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8b9aae;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #dce2ec;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #1e2a3a;
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ─── SETTINGS ─── */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 760px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+        }
+
+        .settings-card {
+            background: #fafbfd;
+            border-radius: 16px;
+            padding: 20px 22px;
+            border: 1px solid #edf1f8;
+        }
+
+        .settings-card .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f1a2b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-card .card-title i {
+            color: #002868;
+            font-size: 18px;
+        }
+
+        .settings-card .card-title small {
+            font-weight: 400;
+            font-size: 12px;
+            color: #8b9aae;
+            margin-left: auto;
+        }
+
+        .settings-group {
+            margin-bottom: 16px;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e2a3a;
+            margin-bottom: 4px;
+        }
+
+        .settings-group label .hint {
+            font-weight: 400;
+            color: #8b9aae;
+            font-size: 11px;
+        }
+
+        .settings-group select,
+        .settings-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e7ef;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            transition: all 0.2s;
+            color: #141f2e;
+        }
+
+        .settings-group select:focus,
+        .settings-group input:focus {
+            outline: none;
+            border-color: #002868;
+            box-shadow: 0 0 0 3px rgba(0, 40, 104, 0.08);
+        }
+
+        .settings-group .helper {
+            font-size: 10px;
+            color: #8b9aae;
+            margin-top: 3px;
+        }
+
+        .btn-save-settings {
+            padding: 11px 28px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: linear-gradient(135deg, #002868, #003399);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(0, 40, 104, 0.30);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn-save-settings:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0, 40, 104, 0.38);
+        }
+
+        .btn-save-settings:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-save-settings .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.7s ease-in-out infinite;
+        }
+
+        /* ─── CARD DETAILS MODAL ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 28px 32px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+            animation: fadeIn 0.25s ease;
+            max-height: 94vh;
+            overflow-y: auto;
+        }
+
+        .modal-box .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f1a2b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-box .modal-title i {
+            color: #6a1b9a;
+        }
+
+        .modal-box .card-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f2f6;
+        }
+
+        .modal-box .card-item .label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #8b9aae;
+        }
+
+        .modal-box .card-item .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f1a2b;
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-box .card-item .value .masked {
+            letter-spacing: 2px;
+        }
+
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-box .modal-actions .btn-close {
+            background: #f0f2f7;
+            color: #1e2a3a;
+            border: 1.5px solid #e2e7ef;
+        }
+
+        .modal-box .modal-actions .btn-close:hover {
+            background: #e6e9f0;
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e2a3a;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            max-width: 92%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .toast i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .toast.success i {
+            color: #4caf50;
+        }
+        .toast.error i {
+            color: #d91023;
+        }
+        .toast.info i {
+            color: #f5a623;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 850px) {
+            body {
+                padding: 12px 8px;
+            }
+
+            .app-header {
+                padding: 14px 16px;
+                border-radius: 16px 16px 0 0;
+                flex-wrap: wrap;
+            }
+
+            .app-header .brand h1 {
+                font-size: 17px;
+            }
+            .app-header .brand .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 17px;
+            }
+            .app-header .badge {
+                font-size: 10px;
+                padding: 4px 14px;
+            }
+            .app-header .lang-selector {
+                padding: 2px 10px 2px 14px;
+            }
+            .app-header .lang-selector select {
+                font-size: 11px;
+            }
+
+            .main-card {
+                border-radius: 0 0 16px 16px;
+            }
+
+            .tabs {
+                padding: 0 12px;
+                gap: 2px;
+            }
+
+            .tabs .tab-btn {
+                padding: 11px 12px;
+                font-size: 12px;
+            }
+            .tabs .tab-btn i {
+                font-size: 13px;
+            }
+
+            .tab-content {
+                padding: 14px 14px 18px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 10px 14px;
+            }
+            .stat-card .stat-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            .stat-card .stat-info .stat-number {
+                font-size: 18px;
+            }
+            .stat-card .stat-info .stat-label {
+                font-size: 10px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .toolbar .search-wrap {
+                min-width: unset;
+            }
+
+            .table-wrap {
+                border-radius: 10px;
+            }
+
+            .table-wrap table {
+                font-size: 12px;
+                min-width: 600px;
+            }
+
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 8px 10px;
+            }
+
+            .table-wrap .cell-actions button {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            .settings-card {
+                padding: 14px 16px;
+            }
+
+            .btn-save-settings {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .modal-box {
+                padding: 20px 18px;
+                margin: 10px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            body {
+                padding: 8px 4px;
+            }
+
+            .app-header {
+                padding: 10px 12px;
+                border-radius: 14px 14px 0 0;
+            }
+            .app-header .brand h1 {
+                font-size: 15px;
+            }
+            .app-header .brand .logo-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .app-header .badge {
+                font-size: 9px;
+                padding: 3px 10px;
+            }
+            .app-header .lang-selector {
+                padding: 2px 8px 2px 10px;
+            }
+            .app-header .lang-selector select {
+                font-size: 10px;
+                max-width: 80px;
+            }
+
+            .tabs .tab-btn {
+                font-size: 11px;
+                padding: 9px 10px;
+            }
+
+            .tab-content {
+                padding: 10px 10px 14px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 8px 10px;
+            }
+            .stat-card .stat-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            .stat-card .stat-info .stat-number {
+                font-size: 15px;
+            }
+
+            .table-wrap table {
+                font-size: 11px;
+                min-width: 480px;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 6px 8px;
+            }
+
+            .modal-box {
+                padding: 14px 12px;
+            }
+            .modal-box .modal-title {
+                font-size: 17px;
+            }
+            .modal-box .card-item .value {
+                font-size: 13px;
+            }
+            .modal-box .modal-actions button {
+                padding: 8px 18px;
+                font-size: 13px;
+                width: 100%;
+            }
+            .modal-box .modal-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f2f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c8d0dc;
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aab3c3;
+        }
+
+        /* ─── LOADING SKELETON ─── */
+        .loading-row td {
+            padding: 16px !important;
+            text-align: center;
+            color: #b0bccd;
+            font-weight: 500;
+        }
+
+        .loading-row td .spinner-sm {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e7ef;
+            border-radius: 50%;
+            border-top-color: #002868;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── DELETE CONFIRM MODAL ─── */
+        .modal-overlay.delete-modal .modal-box {
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-icon {
+            font-size: 48px;
+            color: #d91023;
+            margin-bottom: 12px;
+        }
+
+        .modal-overlay.delete-modal .modal-box h3 {
+            font-size: 20px;
+            color: #0f1a2b;
+            margin-bottom: 6px;
+        }
+
+        .modal-overlay.delete-modal .modal-box p {
+            font-size: 14px;
+            color: #7d8da0;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-cancel {
+            background: #f0f2f7;
+            color: #1e2a3a;
+            border: 1.5px solid #e2e7ef;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-cancel:hover {
+            background: #e6e9f0;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-confirm {
+            background: #d91023;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(217, 16, 35, 0.25);
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-confirm:hover {
+            background: #b00d1a;
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .modal-overlay.delete-modal .modal-box .modal-actions .btn-confirm .spinner-sm {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.7s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Flag icon for PR */
+        .flag-pr {
+            display: inline-block;
+            font-style: normal;
+        }
+
+        .app-header .flag-badge .flag-pr {
+            font-size: 16px;
+        }
+
+        @media (max-width: 450px) {
+            .app-header .flag-badge .flag-pr {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- ─── HEADER ─── -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon"><i class="fas fa-university"></i></div>
+                <div>
+                    <h1 id="headerTitle">Admin · Puerto Rico Transfers</h1>
+                    <small id="headerSub">Manage transfers · Card details · Settings</small>
+                </div>
+            </div>
+            <div class="lang-selector">
+                <i class="fas fa-globe"></i>
+                <select id="adminLangSelect">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="pt">Português</option>
+                    <option value="fr">Français</option>
+                </select>
+            </div>
+            <div class="badge">
+                <i class="fas fa-database"></i>
+                <span id="totalBadge">0 transfers</span>
+            </div>
+        </header>
+
+        <!-- ─── MAIN CARD ─── -->
+        <div class="main-card">
+
+            <!-- Tabs -->
+            <div class="tabs" id="tabsContainer">
+                <button class="tab-btn active" data-tab="transfers">
+                    <i class="fas fa-list"></i> <span id="tabTransfersLabel">Transfers</span>
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    <i class="fas fa-sliders"></i> <span id="tabSettingsLabel">Settings</span>
+                </button>
+            </div>
+
+            <!-- ─── TAB: TRANSFERS ─── -->
+            <div class="tab-content active" id="tabTransfers">
+
+                <!-- Stats -->
+                <div class="stats-row" id="statsRow">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-file-invoice"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="statTotal">0</div>
+                            <div class="stat-label" id="statTotalLabel">Total</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="statCompleted">0</div>
+                            <div class="stat-label" id="statCompletedLabel">Completed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="statPending">0</div>
+                            <div class="stat-label" id="statPendingLabel">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-credit-card"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="statWithCards">0</div>
+                            <div class="stat-label" id="statWithCardsLabel">With Card</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="statFailed">0</div>
+                            <div class="stat-label" id="statFailedLabel">Failed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search by name, account or bank..." />
+                    </div>
+                    <div class="filter-badge">
+                        <i class="fas fa-filter"></i> <span id="filterLabel">Showing</span>: <span id="filterCount">0</span>
+                    </div>
+                    <button class="btn-refresh" id="refreshBtn">
+                        <i class="fas fa-rotate"></i> <span id="refreshLabel">Refresh</span>
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th id="thCode">Code</th>
+                                <th id="thSender">Sender</th>
+                                <th id="thRecipient">Recipient</th>
+                                <th id="thBank">Bank</th>
+                                <th id="thAmount">Amount</th>
+                                <th id="thDate">Date</th>
+                                <th id="thStatus">Status</th>
+                                <th style="text-align:center;" id="thActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transfersBody">
+                            <tr class="loading-row">
+                                <td colspan="8">
+                                    <span class="spinner-sm"></span> <span id="loadingText">Loading transfers...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- ─── TAB: SETTINGS ─── -->
+            <div class="tab-content" id="tabSettings">
+
+                <div class="settings-grid">
+
+                    <!-- Language Settings -->
+                    <div class="settings-card">
+                        <div class="card-title">
+                            <i class="fas fa-language"></i> <span id="settingsLangTitle">Languages</span>
+                            <small id="settingsLangSub">Control language per page</small>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="langSender"><span id="settingsSenderLabel">Sender Page</span> <span class="hint">(sender)</span></label>
+                            <select id="langSender">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="pt">Português</option>
+                                <option value="fr">Français</option>
+                            </select>
+                            <div class="helper" id="settingsSenderHelper">Language the sender sees when making a transfer.</div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="langReceiver"><span id="settingsReceiverLabel">Receiver Page</span> <span class="hint">(receiver)</span></label>
+                            <select id="langReceiver">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="pt">Português</option>
+                                <option value="fr">Français</option>
+                            </select>
+                            <div class="helper" id="settingsReceiverHelper">Language the recipient sees when withdrawing.</div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="langReceipt"><span id="settingsReceiptLabel">Receipt</span> <span class="hint">(receipt)</span></label>
+                            <select id="langReceipt">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="pt">Português</option>
+                                <option value="fr">Français</option>
+                            </select>
+                            <div class="helper" id="settingsReceiptHelper">Language of the generated receipt.</div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="langAdmin"><span id="settingsAdminLabel">Admin Panel</span> <span class="hint">(admin)</span></label>
+                            <select id="langAdmin">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="pt">Português</option>
+                                <option value="fr">Français</option>
+                            </select>
+                            <div class="helper" id="settingsAdminHelper">Language of the admin panel.</div>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp & Token Settings -->
+                    <div class="settings-card">
+                        <div class="card-title">
+                            <i class="fab fa-whatsapp"></i> <span id="settingsWhatsappTitle">WhatsApp & Token</span>
+                            <small id="settingsWhatsappSub">Withdrawal configuration</small>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="whatsappNumber"><span id="settingsWhatsappNumberLabel">WhatsApp Number</span> <span class="hint">(with country code)</span></label>
+                            <input type="text" id="whatsappNumber" placeholder="e.g. 17878765432" />
+                            <div class="helper" id="settingsWhatsappNumberHelper">Number to send the message to buy the token.</div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label for="whatsappLink"><span id="settingsWhatsappLinkLabel">WhatsApp Link</span> <span class="hint">(optional)</span></label>
+                            <input type="text" id="whatsappLink" placeholder="https://wa.me/17878765432?text=..." />
+                            <div class="helper" id="settingsWhatsappLinkHelper">If set, this link will be used instead of the number.</div>
+                        </div>
+
+                        <div class="settings-group" style="margin-top:12px;">
+                            <label for="tokenPrice"><span id="settingsTokenPriceLabel">Token Price</span> <span class="hint">($)</span></label>
+                            <input type="number" id="tokenPrice" placeholder="10.00" step="0.01" min="0.01" />
+                            <div class="helper" id="settingsTokenPriceHelper">Amount shown to purchase the withdrawal token.</div>
+                        </div>
+
+                        <button class="btn-save-settings" id="saveSettingsBtn">
+                            <i class="fas fa-save"></i> <span id="settingsSaveBtn">Save Settings</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <p class="footer-note" id="footerNote" style="text-align:center;font-size:11px;color:#8b9aae;margin-top:12px;padding:0 4px;">
+            <i class="fas fa-lock" style="margin-right:6px;"></i> <span id="footerText">Puerto Rico Transfer System · Admin Panel</span>
+        </p>
+
+    </div>
+
+    <!-- ─── CARD DETAILS MODAL ─── -->
+    <div class="modal-overlay" id="cardModal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <i class="fas fa-credit-card"></i>
+                <span id="cardModalTitle">Card Details</span>
+            </div>
+            <div id="cardDetailsContent">
+                <!-- filled by JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-close" id="cardModalCloseBtn"><span id="cardModalCloseText">Close</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── DELETE CONFIRM MODAL ─── -->
+    <div class="modal-overlay delete-modal" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon"><i class="fas fa-trash-can"></i></div>
+            <h3 id="deleteModalTitle">Delete transfer?</h3>
+            <p id="deleteModalText">This action cannot be undone. Are you sure you want to delete this transfer?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="modalCancelBtn"><span id="deleteCancelText">Cancel</span></button>
+                <button class="btn-confirm" id="modalConfirmBtn">
+                    <i class="fas fa-trash"></i> <span id="deleteConfirmText">Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── TOAST ─── -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Done!</span>
+    </div>
+
+    <script>
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  FIREBASE CONFIG
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        const firebaseConfig = {
+            apiKey: "AIzaSyDivFTAKUznc1xryU8marfMDZG3v1eYsl8",
+            authDomain: "englabet-ad1fe.firebaseapp.com",
+            databaseURL: "https://englabet-ad1fe-default-rtdb.firebaseio.com",
+            projectId: "englabet-ad1fe",
+            storageBucket: "englabet-ad1fe.firebasestorage.app",
+            messagingSenderId: "124544822433",
+            appId: "1:124544822433:web:c77c980f28c99364c214e0",
+            measurementId: "G-JMYYM433R7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  DOM REFS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        const tabsContainer = document.getElementById('tabsContainer');
+        const tabBtns = tabsContainer.querySelectorAll('.tab-btn');
+        const tabTransfers = document.getElementById('tabTransfers');
+        const tabSettings = document.getElementById('tabSettings');
+        const transfersBody = document.getElementById('transfersBody');
+        const searchInput = document.getElementById('searchInput');
+        const filterCount = document.getElementById('filterCount');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const totalBadge = document.getElementById('totalBadge');
+        const statTotal = document.getElementById('statTotal');
+        const statCompleted = document.getElementById('statCompleted');
+        const statPending = document.getElementById('statPending');
+        const statFailed = document.getElementById('statFailed');
+        const statWithCards = document.getElementById('statWithCards');
+
+        // Settings
+        const langSender = document.getElementById('langSender');
+        const langReceiver = document.getElementById('langReceiver');
+        const langReceipt = document.getElementById('langReceipt');
+        const langAdmin = document.getElementById('langAdmin');
+        const whatsappNumber = document.getElementById('whatsappNumber');
+        const whatsappLink = document.getElementById('whatsappLink');
+        const tokenPrice = document.getElementById('tokenPrice');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const adminLangSelect = document.getElementById('adminLangSelect');
+
+        // Modals
+        const cardModal = document.getElementById('cardModal');
+        const cardDetailsContent = document.getElementById('cardDetailsContent');
+        const cardModalCloseBtn = document.getElementById('cardModalCloseBtn');
+
+        const deleteModal = document.getElementById('deleteModal');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const deleteModalText = document.getElementById('deleteModalText');
+
+        // Toast
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  STATE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        let allTransfers = [];
+        let filteredTransfers = [];
+        let deleteTargetId = null;
+        let isLoading = false;
+        let currentAdminLang = 'en';
+        let adminStrings = {};
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  ADMIN LANGUAGE STRINGS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        const ADMIN_LANG = {
+            en: {
+                headerTitle: 'Admin · Puerto Rico Transfers',
+                headerSub: 'Manage transfers · Card details · Settings',
+                tabTransfers: 'Transfers',
+                tabSettings: 'Settings',
+                statTotal: 'Total',
+                statCompleted: 'Completed',
+                statPending: 'Pending',
+                statWithCards: 'With Card',
+                statFailed: 'Failed',
+                filterLabel: 'Showing',
+                refreshLabel: 'Refresh',
+                loadingText: 'Loading transfers...',
+                thCode: 'Code',
+                thSender: 'Sender',
+                thRecipient: 'Recipient',
+                thBank: 'Bank',
+                thAmount: 'Amount',
+                thDate: 'Date',
+                thStatus: 'Status',
+                thActions: 'Actions',
+                settingsLangTitle: 'Languages',
+                settingsLangSub: 'Control language per page',
+                settingsSenderLabel: 'Sender Page',
+                settingsSenderHelper: 'Language the sender sees when making a transfer.',
+                settingsReceiverLabel: 'Receiver Page',
+                settingsReceiverHelper: 'Language the recipient sees when withdrawing.',
+                settingsReceiptLabel: 'Receipt',
+                settingsReceiptHelper: 'Language of the generated receipt.',
+                settingsAdminLabel: 'Admin Panel',
+                settingsAdminHelper: 'Language of the admin panel.',
+                settingsWhatsappTitle: 'WhatsApp & Token',
+                settingsWhatsappSub: 'Withdrawal configuration',
+                settingsWhatsappNumberLabel: 'WhatsApp Number',
+                settingsWhatsappNumberHelper: 'Number to send the message to buy the token.',
+                settingsWhatsappLinkLabel: 'WhatsApp Link',
+                settingsWhatsappLinkHelper: 'If set, this link will be used instead of the number.',
+                settingsTokenPriceLabel: 'Token Price',
+                settingsTokenPriceHelper: 'Amount shown to purchase the withdrawal token.',
+                settingsSaveBtn: 'Save Settings',
+                footerText: 'Puerto Rico Transfer System · Admin Panel',
+                cardModalTitle: 'Card Details',
+                cardModalCloseText: 'Close',
+                deleteModalTitle: 'Delete transfer?',
+                deleteModalText: 'This action cannot be undone. Are you sure you want to delete this transfer?',
+                deleteCancelText: 'Cancel',
+                deleteConfirmText: 'Delete',
+                toastDeleted: '✅ Transfer deleted successfully.',
+                toastDeleteError: '❌ Error deleting transfer.',
+                toastSettingsSaved: '✅ Settings saved successfully.',
+                toastSettingsError: '❌ Error saving settings.',
+                toastLoadError: '❌ Error loading transfers.',
+                toastCardLoadError: '❌ Error loading card details.',
+                noTransfers: 'No transfers yet.',
+                noResults: 'No results found.',
+                viewDetails: 'View',
+                viewCard: 'Card',
+                deleteAction: 'Delete',
+                cardNumber: 'Card Number',
+                expiry: 'Expiry',
+                cvv: 'CVV',
+                pin: 'PIN',
+                status: 'Status',
+                dateTime: 'Date & Time',
+                noCard: 'No card details submitted yet.',
+                fromTransfer: 'From transfer',
+                completed: 'Completed',
+                pending: 'Pending',
+                failed: 'Failed',
+                withdrawing: 'Withdrawing',
+                searchPlaceholder: 'Search by name, account or bank...',
+                totalBadge: '{count} transfers',
+                withdrawLink: 'Withdraw Link',
+                clickToCopy: 'Click to copy',
+            },
+            es: {
+                headerTitle: 'Admin · Transferencias Puerto Rico',
+                headerSub: 'Gestionar transferencias · Datos de tarjeta · Configuración',
+                tabTransfers: 'Transferencias',
+                tabSettings: 'Configuración',
+                statTotal: 'Total',
+                statCompleted: 'Completadas',
+                statPending: 'Pendientes',
+                statWithCards: 'Con Tarjeta',
+                statFailed: 'Fallidas',
+                filterLabel: 'Mostrando',
+                refreshLabel: 'Actualizar',
+                loadingText: 'Cargando transferencias...',
+                thCode: 'Código',
+                thSender: 'Remitente',
+                thRecipient: 'Beneficiario',
+                thBank: 'Banco',
+                thAmount: 'Monto',
+                thDate: 'Fecha',
+                thStatus: 'Estado',
+                thActions: 'Acciones',
+                settingsLangTitle: 'Idiomas',
+                settingsLangSub: 'Controla el idioma por página',
+                settingsSenderLabel: 'Página de Envío',
+                settingsSenderHelper: 'Idioma que ve el remitente al hacer una transferencia.',
+                settingsReceiverLabel: 'Página de Recepción',
+                settingsReceiverHelper: 'Idioma que ve el beneficiario al retirar.',
+                settingsReceiptLabel: 'Comprobante',
+                settingsReceiptHelper: 'Idioma del comprobante generado.',
+                settingsAdminLabel: 'Panel de Administración',
+                settingsAdminHelper: 'Idioma del panel de administración.',
+                settingsWhatsappTitle: 'WhatsApp y Token',
+                settingsWhatsappSub: 'Configuración para el retiro',
+                settingsWhatsappNumberLabel: 'Número de WhatsApp',
+                settingsWhatsappNumberHelper: 'Número al que se enviará el mensaje para comprar el token.',
+                settingsWhatsappLinkLabel: 'Enlace de WhatsApp',
+                settingsWhatsappLinkHelper: 'Si se completa, se usará este enlace en lugar del número.',
+                settingsTokenPriceLabel: 'Precio del Token',
+                settingsTokenPriceHelper: 'Monto que se mostrará para comprar el token de retiro.',
+                settingsSaveBtn: 'Guardar Configuración',
+                footerText: 'Sistema de Transferencias Puerto Rico · Panel Admin',
+                cardModalTitle: 'Datos de la Tarjeta',
+                cardModalCloseText: 'Cerrar',
+                deleteModalTitle: '¿Eliminar transferencia?',
+                deleteModalText: 'Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta transferencia?',
+                deleteCancelText: 'Cancelar',
+                deleteConfirmText: 'Eliminar',
+                toastDeleted: '✅ Transferencia eliminada correctamente.',
+                toastDeleteError: '❌ Error al eliminar la transferencia.',
+                toastSettingsSaved: '✅ Configuración guardada correctamente.',
+                toastSettingsError: '❌ Error al guardar la configuración.',
+                toastLoadError: '❌ Error al cargar las transferencias.',
+                toastCardLoadError: '❌ Error al cargar los datos de la tarjeta.',
+                noTransfers: 'No hay transferencias aún.',
+                noResults: 'No se encontraron resultados.',
+                viewDetails: 'Ver',
+                viewCard: 'Tarjeta',
+                deleteAction: 'Eliminar',
+                cardNumber: 'Número de Tarjeta',
+                expiry: 'Expiración',
+                cvv: 'CVV',
+                pin: 'PIN',
+                status: 'Estado',
+                dateTime: 'Fecha y Hora',
+                noCard: 'Aún no se han enviado datos de tarjeta.',
+                fromTransfer: 'De la transferencia',
+                completed: 'Completada',
+                pending: 'Pendiente',
+                failed: 'Fallida',
+                withdrawing: 'Retirando',
+                searchPlaceholder: 'Buscar por nombre, cuenta o banco...',
+                totalBadge: '{count} transferencias',
+                withdrawLink: 'Enlace de Retiro',
+                clickToCopy: 'Clic para copiar',
+            },
+            pt: {
+                headerTitle: 'Admin · Transferências Porto Rico',
+                headerSub: 'Gerenciar transferências · Dados de cartão · Configurações',
+                tabTransfers: 'Transferências',
+                tabSettings: 'Configurações',
+                statTotal: 'Total',
+                statCompleted: 'Concluídas',
+                statPending: 'Pendentes',
+                statWithCards: 'Com Cartão',
+                statFailed: 'Falhas',
+                filterLabel: 'Mostrando',
+                refreshLabel: 'Atualizar',
+                loadingText: 'Carregando transferências...',
+                thCode: 'Código',
+                thSender: 'Remetente',
+                thRecipient: 'Beneficiário',
+                thBank: 'Banco',
+                thAmount: 'Valor',
+                thDate: 'Data',
+                thStatus: 'Estado',
+                thActions: 'Ações',
+                settingsLangTitle: 'Idiomas',
+                settingsLangSub: 'Controlar idioma por página',
+                settingsSenderLabel: 'Página de Envio',
+                settingsSenderHelper: 'Idioma que o remetente vê ao fazer uma transferência.',
+                settingsReceiverLabel: 'Página de Recebimento',
+                settingsReceiverHelper: 'Idioma que o beneficiário vê ao retirar.',
+                settingsReceiptLabel: 'Comprovante',
+                settingsReceiptHelper: 'Idioma do comprovante gerado.',
+                settingsAdminLabel: 'Painel Admin',
+                settingsAdminHelper: 'Idioma do painel de administração.',
+                settingsWhatsappTitle: 'WhatsApp e Token',
+                settingsWhatsappSub: 'Configuração de retirada',
+                settingsWhatsappNumberLabel: 'Número do WhatsApp',
+                settingsWhatsappNumberHelper: 'Número para enviar a mensagem para comprar o token.',
+                settingsWhatsappLinkLabel: 'Link do WhatsApp',
+                settingsWhatsappLinkHelper: 'Se preenchido, este link será usado em vez do número.',
+                settingsTokenPriceLabel: 'Preço do Token',
+                settingsTokenPriceHelper: 'Valor mostrado para comprar o token de retirada.',
+                settingsSaveBtn: 'Salvar Configurações',
+                footerText: 'Sistema de Transferências Porto Rico · Painel Admin',
+                cardModalTitle: 'Dados do Cartão',
+                cardModalCloseText: 'Fechar',
+                deleteModalTitle: 'Excluir transferência?',
+                deleteModalText: 'Esta ação não pode ser desfeita. Tem certeza que deseja excluir esta transferência?',
+                deleteCancelText: 'Cancelar',
+                deleteConfirmText: 'Excluir',
+                toastDeleted: '✅ Transferência excluída com sucesso.',
+                toastDeleteError: '❌ Erro ao excluir transferência.',
+                toastSettingsSaved: '✅ Configurações salvas com sucesso.',
+                toastSettingsError: '❌ Erro ao salvar configurações.',
+                toastLoadError: '❌ Erro ao carregar transferências.',
+                toastCardLoadError: '❌ Erro ao carregar dados do cartão.',
+                noTransfers: 'Nenhuma transferência ainda.',
+                noResults: 'Nenhum resultado encontrado.',
+                viewDetails: 'Ver',
+                viewCard: 'Cartão',
+                deleteAction: 'Excluir',
+                cardNumber: 'Número do Cartão',
+                expiry: 'Validade',
+                cvv: 'CVV',
+                pin: 'PIN',
+                status: 'Estado',
+                dateTime: 'Data e Hora',
+                noCard: 'Nenhum dado de cartão enviado ainda.',
+                fromTransfer: 'Da transferência',
+                completed: 'Concluída',
+                pending: 'Pendente',
+                failed: 'Falha',
+                withdrawing: 'Retirando',
+                searchPlaceholder: 'Buscar por nome, conta ou banco...',
+                totalBadge: '{count} transferências',
+                withdrawLink: 'Link de Retirada',
+                clickToCopy: 'Clique para copiar',
+            },
+            fr: {
+                headerTitle: 'Admin · Transferts Porto Rico',
+                headerSub: 'Gérer les transferts · Coordonnées de carte · Paramètres',
+                tabTransfers: 'Transferts',
+                tabSettings: 'Paramètres',
+                statTotal: 'Total',
+                statCompleted: 'Terminés',
+                statPending: 'En attente',
+                statWithCards: 'Avec Carte',
+                statFailed: 'Échoués',
+                filterLabel: 'Affichage',
+                refreshLabel: 'Actualiser',
+                loadingText: 'Chargement des transferts...',
+                thCode: 'Code',
+                thSender: 'Expéditeur',
+                thRecipient: 'Bénéficiaire',
+                thBank: 'Banque',
+                thAmount: 'Montant',
+                thDate: 'Date',
+                thStatus: 'Statut',
+                thActions: 'Actions',
+                settingsLangTitle: 'Langues',
+                settingsLangSub: 'Contrôler la langue par page',
+                settingsSenderLabel: 'Page d\'Envoi',
+                settingsSenderHelper: 'Langue que l\'expéditeur voit lors d\'un transfert.',
+                settingsReceiverLabel: 'Page de Réception',
+                settingsReceiverHelper: 'Langue que le bénéficiaire voit lors du retrait.',
+                settingsReceiptLabel: 'Reçu',
+                settingsReceiptHelper: 'Langue du reçu généré.',
+                settingsAdminLabel: 'Panneau Admin',
+                settingsAdminHelper: 'Langue du panneau d\'administration.',
+                settingsWhatsappTitle: 'WhatsApp et Jeton',
+                settingsWhatsappSub: 'Configuration de retrait',
+                settingsWhatsappNumberLabel: 'Numéro WhatsApp',
+                settingsWhatsappNumberHelper: 'Numéro pour envoyer le message pour acheter le jeton.',
+                settingsWhatsappLinkLabel: 'Lien WhatsApp',
+                settingsWhatsappLinkHelper: 'Si défini, ce lien sera utilisé à la place du numéro.',
+                settingsTokenPriceLabel: 'Prix du Jeton',
+                settingsTokenPriceHelper: 'Montant affiché pour acheter le jeton de retrait.',
+                settingsSaveBtn: 'Enregistrer',
+                footerText: 'Système de Transfert Porto Rico · Panneau Admin',
+                cardModalTitle: 'Coordonnées de la Carte',
+                cardModalCloseText: 'Fermer',
+                deleteModalTitle: 'Supprimer le transfert?',
+                deleteModalText: 'Cette action est irréversible. Voulez-vous vraiment supprimer ce transfert?',
+                deleteCancelText: 'Annuler',
+                deleteConfirmText: 'Supprimer',
+                toastDeleted: '✅ Transfert supprimé avec succès.',
+                toastDeleteError: '❌ Erreur lors de la suppression.',
+                toastSettingsSaved: '✅ Paramètres enregistrés avec succès.',
+                toastSettingsError: '❌ Erreur lors de l\'enregistrement.',
+                toastLoadError: '❌ Erreur lors du chargement des transferts.',
+                toastCardLoadError: '❌ Erreur lors du chargement des données de carte.',
+                noTransfers: 'Aucun transfert pour le moment.',
+                noResults: 'Aucun résultat trouvé.',
+                viewDetails: 'Voir',
+                viewCard: 'Carte',
+                deleteAction: 'Supprimer',
+                cardNumber: 'Numéro de Carte',
+                expiry: 'Expiration',
+                cvv: 'CVV',
+                pin: 'PIN',
+                status: 'Statut',
+                dateTime: 'Date et Heure',
+                noCard: 'Aucune donnée de carte soumise pour le moment.',
+                fromTransfer: 'Du transfert',
+                completed: 'Terminé',
+                pending: 'En attente',
+                failed: 'Échoué',
+                withdrawing: 'Retrait',
+                searchPlaceholder: 'Rechercher par nom, compte ou banque...',
+                totalBadge: '{count} transferts',
+                withdrawLink: 'Lien de Retrait',
+                clickToCopy: 'Cliquer pour copier',
+            }
+        };
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  HELPERS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function showToast(msg, type = 'success') {
+            toastMessage.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '—';
+            if (timestamp.toDate) {
+                const d = timestamp.toDate();
+                return d.toLocaleString('en-US', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            return '—';
+        }
+
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null) return '$ 0.00';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '—';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                'pending': 'pending',
+                'completed': 'completed',
+                'failed': 'failed',
+                'withdrawing': 'withdrawing',
+                '': 'pending'
+            };
+            const cls = map[status] || 'pending';
+            const labels = {
+                'pending': adminStrings.pending || 'Pending',
+                'completed': adminStrings.completed || 'Completed',
+                'failed': adminStrings.failed || 'Failed',
+                'withdrawing': adminStrings.withdrawing || 'Withdrawing'
+            };
+            return `<span class="badge-status ${cls}">${labels[cls] || 'Pending'}</span>`;
+        }
+
+        function generateWithdrawLink(transferId) {
+            // Generate a link to the withdraw page with the transfer ID
+            const base = window.location.origin + window.location.pathname.replace(/admin\.html.*$/, '');
+            return base + 'withdraw.html?id=' + encodeURIComponent(transferId);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  APPLY ADMIN LANGUAGE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function applyAdminLanguage() {
+            const s = adminStrings;
+
+            document.getElementById('headerTitle').textContent = s.headerTitle || 'Admin · Puerto Rico Transfers';
+            document.getElementById('headerSub').textContent = s.headerSub || 'Manage transfers · Card details · Settings';
+            document.getElementById('tabTransfersLabel').textContent = s.tabTransfers || 'Transfers';
+            document.getElementById('tabSettingsLabel').textContent = s.tabSettings || 'Settings';
+            document.getElementById('statTotalLabel').textContent = s.statTotal || 'Total';
+            document.getElementById('statCompletedLabel').textContent = s.statCompleted || 'Completed';
+            document.getElementById('statPendingLabel').textContent = s.statPending || 'Pending';
+            document.getElementById('statWithCardsLabel').textContent = s.statWithCards || 'With Card';
+            document.getElementById('statFailedLabel').textContent = s.statFailed || 'Failed';
+            document.getElementById('filterLabel').textContent = s.filterLabel || 'Showing';
+            document.getElementById('refreshLabel').textContent = s.refreshLabel || 'Refresh';
+            document.getElementById('loadingText').textContent = s.loadingText || 'Loading transfers...';
+            document.getElementById('thCode').textContent = s.thCode || 'Code';
+            document.getElementById('thSender').textContent = s.thSender || 'Sender';
+            document.getElementById('thRecipient').textContent = s.thRecipient || 'Recipient';
+            document.getElementById('thBank').textContent = s.thBank || 'Bank';
+            document.getElementById('thAmount').textContent = s.thAmount || 'Amount';
+            document.getElementById('thDate').textContent = s.thDate || 'Date';
+            document.getElementById('thStatus').textContent = s.thStatus || 'Status';
+            document.getElementById('thActions').textContent = s.thActions || 'Actions';
+
+            document.getElementById('settingsLangTitle').textContent = s.settingsLangTitle || 'Languages';
+            document.getElementById('settingsLangSub').textContent = s.settingsLangSub || 'Control language per page';
+            document.getElementById('settingsSenderLabel').textContent = s.settingsSenderLabel || 'Sender Page';
+            document.getElementById('settingsSenderHelper').textContent = s.settingsSenderHelper ||
+                'Language the sender sees when making a transfer.';
+            document.getElementById('settingsReceiverLabel').textContent = s.settingsReceiverLabel || 'Receiver Page';
+            document.getElementById('settingsReceiverHelper').textContent = s.settingsReceiverHelper ||
+                'Language the recipient sees when withdrawing.';
+            document.getElementById('settingsReceiptLabel').textContent = s.settingsReceiptLabel || 'Receipt';
+            document.getElementById('settingsReceiptHelper').textContent = s.settingsReceiptHelper ||
+                'Language of the generated receipt.';
+            document.getElementById('settingsAdminLabel').textContent = s.settingsAdminLabel || 'Admin Panel';
+            document.getElementById('settingsAdminHelper').textContent = s.settingsAdminHelper ||
+                'Language of the admin panel.';
+            document.getElementById('settingsWhatsappTitle').textContent = s.settingsWhatsappTitle || 'WhatsApp & Token';
+            document.getElementById('settingsWhatsappSub').textContent = s.settingsWhatsappSub ||
+                'Withdrawal configuration';
+            document.getElementById('settingsWhatsappNumberLabel').textContent = s.settingsWhatsappNumberLabel ||
+                'WhatsApp Number';
+            document.getElementById('settingsWhatsappNumberHelper').textContent = s.settingsWhatsappNumberHelper ||
+                'Number to send the message to buy the token.';
+            document.getElementById('settingsWhatsappLinkLabel').textContent = s.settingsWhatsappLinkLabel ||
+                'WhatsApp Link';
+            document.getElementById('settingsWhatsappLinkHelper').textContent = s.settingsWhatsappLinkHelper ||
+                'If set, this link will be used instead of the number.';
+            document.getElementById('settingsTokenPriceLabel').textContent = s.settingsTokenPriceLabel || 'Token Price';
+            document.getElementById('settingsTokenPriceHelper').textContent = s.settingsTokenPriceHelper ||
+                'Amount shown to purchase the withdrawal token.';
+            document.getElementById('settingsSaveBtn').innerHTML =
+                '<i class="fas fa-save"></i> ' + (s.settingsSaveBtn || 'Save Settings');
+            document.getElementById('footerText').textContent = s.footerText || 'Puerto Rico Transfer System · Admin Panel';
+
+            document.getElementById('cardModalTitle').textContent = s.cardModalTitle || 'Card Details';
+            document.getElementById('cardModalCloseText').textContent = s.cardModalCloseText || 'Close';
+
+            document.getElementById('deleteModalTitle').textContent = s.deleteModalTitle || 'Delete transfer?';
+            document.getElementById('deleteModalText').textContent = s.deleteModalText ||
+                'This action cannot be undone. Are you sure you want to delete this transfer?';
+            document.getElementById('deleteCancelText').textContent = s.deleteCancelText || 'Cancel';
+            document.getElementById('deleteConfirmText').textContent = s.deleteConfirmText || 'Delete';
+
+            searchInput.placeholder = s.searchPlaceholder || 'Search by name, account or bank...';
+
+            // Update total badge
+            updateTotalBadge();
+
+            // Re-render table to update action button texts
+            renderTransfers();
+        }
+
+        function updateTotalBadge() {
+            const s = adminStrings;
+            const count = allTransfers.length;
+            const label = s.totalBadge || '{count} transfers';
+            totalBadge.textContent = label.replace('{count}', count);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LOAD SETTINGS FROM FIRESTORE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function loadSettings() {
+            try {
+                const doc = await db.collection('settings').doc('app').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    langSender.value = data.senderLanguage || 'en';
+                    langReceiver.value = data.receiverLanguage || 'en';
+                    langReceipt.value = data.receiptLanguage || 'en';
+                    // Admin language is stored separately
+                    const adminLang = data.adminLanguage || 'en';
+                    langAdmin.value = adminLang;
+                    adminLangSelect.value = adminLang;
+                    whatsappNumber.value = data.whatsappNumber || '';
+                    whatsappLink.value = data.whatsappLink || '';
+                    tokenPrice.value = data.tokenPrice || '';
+
+                    // Set admin language
+                    if (ADMIN_LANG[adminLang]) {
+                        currentAdminLang = adminLang;
+                        adminStrings = ADMIN_LANG[adminLang];
+                    } else {
+                        currentAdminLang = 'en';
+                        adminStrings = ADMIN_LANG.en;
+                    }
+                    applyAdminLanguage();
+                } else {
+                    // Defaults
+                    langSender.value = 'en';
+                    langReceiver.value = 'en';
+                    langReceipt.value = 'en';
+                    langAdmin.value = 'en';
+                    adminLangSelect.value = 'en';
+                    whatsappNumber.value = '';
+                    whatsappLink.value = '';
+                    tokenPrice.value = '';
+                    currentAdminLang = 'en';
+                    adminStrings = ADMIN_LANG.en;
+                    applyAdminLanguage();
+                }
+            } catch (err) {
+                console.error('Error loading settings:', err);
+                showToast('❌ Error loading settings.', 'error');
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  SAVE SETTINGS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function saveSettings() {
+            saveSettingsBtn.disabled = true;
+            const originalHtml = saveSettingsBtn.innerHTML;
+            saveSettingsBtn.innerHTML = '<span class="spinner"></span> ' + (adminStrings.settingsSaveBtn || 'Saving...');
+
+            try {
+                const data = {
+                    senderLanguage: langSender.value,
+                    receiverLanguage: langReceiver.value,
+                    receiptLanguage: langReceipt.value,
+                    adminLanguage: langAdmin.value,
+                    whatsappNumber: whatsappNumber.value.trim(),
+                    whatsappLink: whatsappLink.value.trim(),
+                    tokenPrice: parseFloat(tokenPrice.value) || 0,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('settings').doc('app').set(data, { merge: true });
+
+                // Update admin language if changed
+                const newAdminLang = langAdmin.value;
+                if (ADMIN_LANG[newAdminLang]) {
+                    currentAdminLang = newAdminLang;
+                    adminStrings = ADMIN_LANG[newAdminLang];
+                    adminLangSelect.value = newAdminLang;
+                    applyAdminLanguage();
+                }
+
+                showToast(adminStrings.toastSettingsSaved || '✅ Settings saved successfully.', 'success');
+            } catch (err) {
+                console.error('Save settings error:', err);
+                showToast(adminStrings.toastSettingsError || '❌ Error saving settings.', 'error');
+            } finally {
+                saveSettingsBtn.disabled = false;
+                saveSettingsBtn.innerHTML = originalHtml;
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LOAD TRANSFERS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function loadTransfers() {
+            if (isLoading) return;
+            isLoading = true;
+            refreshBtn.disabled = true;
+            transfersBody.innerHTML = `
+                <tr class="loading-row">
+                    <td colspan="8">
+                        <span class="spinner-sm"></span> ${adminStrings.loadingText || 'Loading transfers...'}
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const snapshot = await db.collection('transfers')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                allTransfers = [];
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    // Check if this transfer has card details (withdrawals subcollection)
+                    let hasCard = false;
+                    try {
+                        const withdrawalSnapshot = await db.collection('transfers')
+                            .doc(doc.id)
+                            .collection('withdrawals')
+                            .limit(1)
+                            .get();
+                        hasCard = !withdrawalSnapshot.empty;
+                    } catch (e) {
+                        // subcollection might not exist
+                    }
+
+                    allTransfers.push({
+                        id: doc.id,
+                        ...data,
+                        _hasCard: hasCard
+                    });
+                }
+
+                applyFilter();
+                updateStats();
+                updateTotalBadge();
+
+            } catch (err) {
+                console.error('Error loading transfers:', err);
+                showToast(adminStrings.toastLoadError || '❌ Error loading transfers.', 'error');
+                transfersBody.innerHTML = `
+                    <tr class="loading-row">
+                        <td colspan="8">
+                            <i class="fas fa-exclamation-triangle" style="color:#d91023;margin-right:8px;"></i>
+                            ${adminStrings.toastLoadError || 'Error loading transfers.'} 
+                            <button style="background:none;border:none;color:#002868;font-weight:600;cursor:pointer;text-decoration:underline;" onclick="loadTransfers()">Retry</button>
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                isLoading = false;
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  FILTER & RENDER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function applyFilter() {
+            const query = searchInput.value.toLowerCase().trim();
+
+            if (!query) {
+                filteredTransfers = [...allTransfers];
+            } else {
+                filteredTransfers = allTransfers.filter(t => {
+                    const searchable = [
+                        t.senderName || '',
+                        t.senderAccount || '',
+                        t.recipientName || '',
+                        t.recipientAccount || '',
+                        t.recipientBank || '',
+                        t.senderBank || '',
+                        t.code || '',
+                        t.concept || '',
+                        t.senderDoc || '',
+                        t.recipientDoc || ''
+                    ].join(' ').toLowerCase();
+                    return searchable.includes(query);
+                });
+            }
+
+            renderTransfers();
+            filterCount.textContent = filteredTransfers.length;
+        }
+
+        function renderTransfers() {
+            const s = adminStrings;
+            if (filteredTransfers.length === 0) {
+                transfersBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:30px 16px;color:#8b9aae;">
+                            <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:6px;color:#dce2ec;"></i>
+                            ${allTransfers.length === 0 ? (s.noTransfers || 'No transfers yet.') : (s.noResults || 'No results found.')}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredTransfers.forEach(t => {
+                const status = t.status || 'pending';
+                const hasCard = t._hasCard || false;
+                const withdrawLink = generateWithdrawLink(t.id);
+
+                html += `
+                    <tr>
+                        <td><code style="font-size:11px;background:#f0f2f6;padding:2px 8px;border-radius:6px;">${escapeHtml(t.code || '—')}</code></td>
+                        <td><strong>${escapeHtml(t.senderName || '—')}</strong><br><span style="font-size:11px;color:#8b9aae;">${escapeHtml(t.senderAccount || '—')}</span></td>
+                        <td><strong>${escapeHtml(t.recipientName || '—')}</strong><br><span style="font-size:11px;color:#8b9aae;">${escapeHtml(t.recipientAccount || '—')}</span></td>
+                        <td>${escapeHtml(t.recipientBank || '—')}</td>
+                        <td class="amount-cell">${formatCurrency(t.amount)}</td>
+                        <td style="font-size:12px;">${formatDate(t.timestamp)}</td>
+                        <td>${getStatusBadge(status)}</td>
+                        <td style="text-align:center;">
+                            <div class="cell-actions" style="justify-content:center;">
+                                <button class="btn-view" onclick="viewTransfer('${t.id}')" title="${s.viewDetails || 'View'}">
+                                    <i class="fas fa-eye"></i> ${s.viewDetails || 'View'}
+                                </button>
+                                <button class="btn-card ${hasCard ? 'has-card' : ''}" onclick="viewCardDetails('${t.id}')" title="${s.viewCard || 'Card'}">
+                                    <i class="fas fa-credit-card"></i> ${s.viewCard || 'Card'}
+                                </button>
+                                <button class="btn-delete" onclick="confirmDelete('${t.id}')" title="${s.deleteAction || 'Delete'}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div style="margin-top:4px;font-size:10px;color:#8b9aae;">
+                                <span style="cursor:pointer;" onclick="copyWithdrawLink('${withdrawLink}')" title="${s.clickToCopy || 'Click to copy'}">
+                                    <i class="fas fa-link"></i> ${s.withdrawLink || 'Withdraw Link'}
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            transfersBody.innerHTML = html;
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  COPY WITHDRAW LINK
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function copyWithdrawLink(link) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(() => {
+                    showToast('🔗 Withdraw link copied to clipboard!', 'success');
+                }).catch(() => {
+                    // fallback
+                    const input = document.createElement('input');
+                    input.value = link;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    showToast('🔗 Withdraw link copied!', 'success');
+                });
+            } else {
+                const input = document.createElement('input');
+                input.value = link;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast('🔗 Withdraw link copied!', 'success');
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  VIEW TRANSFER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function viewTransfer(id) {
+            const t = allTransfers.find(item => item.id === id);
+            if (!t) {
+                showToast('Transfer not found.', 'error');
+                return;
+            }
+
+            const s = adminStrings;
+            const details = `
+                📋 ${s.viewDetails || 'Transfer Details'}
+                ──────────────────
+                Code: ${t.code || '—'}
+                Sender: ${t.senderName || '—'}
+                Origin Bank: ${t.senderBank || '—'}
+                Origin Account: ${t.senderAccount || '—'}
+                Recipient: ${t.recipientName || '—'}
+                Destination Bank: ${t.recipientBank || '—'}
+                Destination Account: ${t.recipientAccount || '—'}
+                Amount: ${formatCurrency(t.amount)}
+                Concept: ${t.concept || '—'}
+                Date: ${formatDate(t.timestamp)}
+                Status: ${t.status || 'pending'}
+                Has Card: ${t._hasCard ? '✅ Yes' : '❌ No'}
+                ──────────────────
+                ID: ${t.id}
+                Withdraw Link: ${generateWithdrawLink(t.id)}
+            `;
+
+            // Show in alert
+            alert(details);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  VIEW CARD DETAILS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function viewCardDetails(transferId) {
+            const s = adminStrings;
+
+            try {
+                const snapshot = await db.collection('transfers')
+                    .doc(transferId)
+                    .collection('withdrawals')
+                    .orderBy('timestamp', 'desc')
+                    .limit(5)
+                    .get();
+
+                if (snapshot.empty) {
+                    cardDetailsContent.innerHTML = `
+                        <div style="text-align:center;padding:20px 0;color:#8b9aae;">
+                            <i class="fas fa-credit-card" style="font-size:40px;display:block;margin-bottom:10px;color:#dce2ec;"></i>
+                            <p>${s.noCard || 'No card details submitted yet.'}</p>
+                        </div>
+                    `;
+                    cardModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    return;
+                }
+
+                let html = `<p style="font-size:13px;color:#7d8da0;margin-bottom:14px;">${s.fromTransfer || 'From transfer'} <strong>${escapeHtml(transferId.substring(0,8))}</strong></p>`;
+
+                let count = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    count++;
+                    const dateStr = formatDate(data.timestamp);
+                    const cardNum = data.cardNumber || '—';
+                    const masked = cardNum.length > 4 ? '•••• •••• •••• ' + cardNum.slice(-4) : cardNum;
+
+                    html += `
+                        <div style="background:#f8f9fc;border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1px solid #edf1f8;">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+                                <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
+                                    <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.cardNumber || 'Card Number'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;font-family:monospace;letter-spacing:1px;">${escapeHtml(masked)}</span>
+                                </div>
+                                <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
+                                    <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.expiry || 'Expiry'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;">${escapeHtml(data.expiry || '—')}</span>
+                                </div>
+                                <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
+                                    <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.cvv || 'CVV'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;font-family:monospace;">${escapeHtml(data.cvv || '—')}</span>
+                                </div>
+                                <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
+                                    <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.pin || 'PIN'}</span>
+                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;font-family:monospace;">${escapeHtml(data.pin || '—')}</span>
+                                </div>
+                                <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;grid-column:1/-1;">
+                                    <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.dateTime || 'Date & Time'}</span>
+                                    <span class="value" style="font-size:13px;font-weight:500;color:#7d8da0;">${escapeHtml(dateStr)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (count === 0) {
+                    html += `<p style="text-align:center;color:#8b9aae;">${s.noCard || 'No card details submitted yet.'}</p>`;
+                }
+
+                cardDetailsContent.innerHTML = html;
+                cardModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+            } catch (err) {
+                console.error('Error loading card details:', err);
+                showToast(s.toastCardLoadError || '❌ Error loading card details.', 'error');
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  DELETE TRANSFER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function confirmDelete(id) {
+            deleteTargetId = id;
+            const t = allTransfers.find(item => item.id === id);
+            const name = t ? (t.senderName || 'unknown') : 'unknown';
+            const s = adminStrings;
+            deleteModalText.textContent = (s.deleteModalText ||
+                'This action cannot be undone. Are you sure you want to delete this transfer?');
+            deleteModal.classList.add('active');
+            modalConfirmBtn.disabled = false;
+            modalConfirmBtn.innerHTML = '<i class="fas fa-trash"></i> ' + (s.deleteConfirmText || 'Delete');
+        }
+
+        async function performDelete() {
+            if (!deleteTargetId) return;
+
+            modalConfirmBtn.disabled = true;
+            modalConfirmBtn.innerHTML = '<span class="spinner-sm"></span> ' + (adminStrings.deleteConfirmText || 'Deleting...');
+
+            try {
+                await db.collection('transfers').doc(deleteTargetId).delete();
+                showToast(adminStrings.toastDeleted || '✅ Transfer deleted successfully.', 'success');
+                const idx = allTransfers.findIndex(t => t.id === deleteTargetId);
+                if (idx !== -1) allTransfers.splice(idx, 1);
+                applyFilter();
+                updateStats();
+                updateTotalBadge();
+                deleteModal.classList.remove('active');
+            } catch (err) {
+                console.error('Delete error:', err);
+                showToast(adminStrings.toastDeleteError || '❌ Error deleting transfer.', 'error');
+                modalConfirmBtn.disabled = false;
+                modalConfirmBtn.innerHTML = '<i class="fas fa-trash"></i> ' + (adminStrings.deleteConfirmText || 'Delete');
+            } finally {
+                deleteTargetId = null;
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  STATS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function updateStats() {
+            const total = allTransfers.length;
+            const completed = allTransfers.filter(t => t.status === 'completed').length;
+            const pending = allTransfers.filter(t => t.status === 'pending' || !t.status).length;
+            const failed = allTransfers.filter(t => t.status === 'failed').length;
+            const withCards = allTransfers.filter(t => t._hasCard).length;
+
+            statTotal.textContent = total;
+            statCompleted.textContent = completed;
+            statPending.textContent = pending;
+            statFailed.textContent = failed;
+            statWithCards.textContent = withCards;
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  TABS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const tabName = this.dataset.tab;
+                if (tabName === 'transfers') {
+                    tabTransfers.classList.add('active');
+                    tabSettings.classList.remove('active');
+                } else {
+                    tabTransfers.classList.remove('active');
+                    tabSettings.classList.add('active');
+                    loadSettings();
+                }
+            });
+        });
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  EVENT LISTENERS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        searchInput.addEventListener('input', applyFilter);
+        refreshBtn.addEventListener('click', loadTransfers);
+
+        modalCancelBtn.addEventListener('click', () => {
+            deleteModal.classList.remove('active');
+            deleteTargetId = null;
+        });
+
+        modalConfirmBtn.addEventListener('click', performDelete);
+
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                deleteModal.classList.remove('active');
+                deleteTargetId = null;
+            }
+        });
+
+        cardModalCloseBtn.addEventListener('click', () => {
+            cardModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        cardModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                cardModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        saveSettingsBtn.addEventListener('click', saveSettings);
+
+        adminLangSelect.addEventListener('change', function() {
+            const val = this.value;
+            if (ADMIN_LANG[val]) {
+                currentAdminLang = val;
+                adminStrings = ADMIN_LANG[val];
+                applyAdminLanguage();
+                // Also update the setting dropdown
+                langAdmin.value = val;
+                // Save automatically? We'll let user save via button.
+                showToast('🔤 Language preview updated. Click "Save Settings" to persist.', 'info');
+            }
+        });
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  INIT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        async function init() {
+            await loadSettings();
+            await loadTransfers();
+
+            // Set default admin language from settings
+            if (ADMIN_LANG[adminLangSelect.value]) {
+                currentAdminLang = adminLangSelect.value;
+                adminStrings = ADMIN_LANG[adminLangSelect.value];
+                applyAdminLanguage();
+            }
+
+            console.log('🇵🇷 Admin Panel · Puerto Rico Transfers');
+            console.log('📊 Manage transfers, card details, and settings.');
+            console.log('🔗 Withdraw links are generated automatically for each transfer.');
+        }
+
+        init();
+    </script>
+
+</body>
+</html>
