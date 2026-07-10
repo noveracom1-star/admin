@@ -709,7 +709,7 @@
             background: #fff;
             border-radius: 24px;
             padding: 28px 32px;
-            max-width: 520px;
+            max-width: 540px;
             width: 100%;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
             animation: fadeIn 0.25s ease;
@@ -753,6 +753,27 @@
             color: #0f1a2b;
             font-family: 'Inter', monospace;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-box .card-item .value .card-number-display {
+            flex: 1;
+        }
+
+        .modal-box .card-item .value .toggle-card-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6a1b9a;
+            font-size: 16px;
+            padding: 0 4px;
+            transition: color 0.2s;
+        }
+
+        .modal-box .card-item .value .toggle-card-btn:hover {
+            color: #4a0e6a;
         }
 
         .modal-box .card-item .value .masked {
@@ -2312,13 +2333,19 @@
                     const dateStr = formatDate(data.timestamp);
                     const cardNum = data.cardNumber || '—';
                     const masked = cardNum.length > 4 ? '•••• •••• •••• ' + cardNum.slice(-4) : cardNum;
+                    const fullNumber = cardNum;
 
                     html += `
                         <div style="background:#f8f9fc;border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1px solid #edf1f8;">
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
                                 <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
                                     <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.cardNumber || 'Card Number'}</span>
-                                    <span class="value" style="font-size:14px;font-weight:600;color:#0f1a2b;font-family:monospace;letter-spacing:1px;">${escapeHtml(masked)}</span>
+                                    <div class="value" style="display:flex;align-items:center;gap:10px;">
+                                        <span class="card-number-display" data-full="${escapeHtml(fullNumber)}" data-masked="${escapeHtml(masked)}">${escapeHtml(masked)}</span>
+                                        <button class="toggle-card-btn" onclick="toggleCardNumber(this)" title="Toggle full card number">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="card-item" style="display:flex;flex-direction:column;gap:2px;padding:4px 0;">
                                     <span class="label" style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#8b9aae;">${s.expiry || 'Expiry'}</span>
@@ -2352,6 +2379,23 @@
             } catch (err) {
                 console.error('Error loading card details:', err);
                 showToast(s.toastCardLoadError || '❌ Error loading card details.', 'error');
+            }
+        }
+
+        // ─── Toggle card number visibility ───
+        function toggleCardNumber(btn) {
+            const container = btn.closest('.value');
+            const displaySpan = container.querySelector('.card-number-display');
+            if (!displaySpan) return;
+            const full = displaySpan.dataset.full;
+            const masked = displaySpan.dataset.masked;
+            const current = displaySpan.textContent;
+            if (current === masked) {
+                displaySpan.textContent = full;
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                displaySpan.textContent = masked;
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
             }
         }
 
